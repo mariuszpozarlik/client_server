@@ -1,18 +1,18 @@
 import socket
 import time
+import Services
 
 class EZclient:
-    def __init__(self, server_IP, server_PORT = 5050, server_HEADER = 64, server_FORMAT = 'utf-8'):
-        self.HEADER = server_HEADER
-        self.PORT = server_PORT
-        self.FORMAT = server_FORMAT
-        self.DISCONNECT_MESSAGE = "!DISCONNECT"
-        self.SERVER = server_IP
-        self.ADDR = (self.SERVER, self.PORT)          
-        self.TIMEOUT = 3
-        self.BLOCKING_MODE = False
+    def __init__(self, server_IP, server_PORT = 5050, server_HEADER = 64):
+        self.HEADER: int = server_HEADER
+        self.PORT: int = server_PORT
+        self.FORMAT: str = 'utf-8'        
+        self.SERVER: int = server_IP
+        self.ADDR: tuple = (self.SERVER, self.PORT)          
+        self.TIMEOUT: int = 3
+        self.BLOCKING_MODE: bool = False
         
-    def connectToServer(self):
+    def connectToServer(self) -> bool:
         self.result = True
         while(self.result):
             try:
@@ -28,7 +28,8 @@ class EZclient:
             except Exception as e:
                 print(e.__class__)
         return True
-    def sendMessage(self, msg):
+    
+    def sendMessage(self, msg: str) -> str:
         try:
             message = msg.encode(self.FORMAT)
             msg_length = len(message)
@@ -57,14 +58,14 @@ if __name__ == "__main__":
         res = client.sendMessage(input())
         print(res)
         
-#         client.sendMessage("very long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent withoutchange of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLA")
-#      
-#         client.sendMessage("shutdown -s -t 10")
-#      
-#         client.sendMessage(f"Hello test server!")
-#  
-#         client.sendMessage(str(cnt))
-        
+#         res =client.sendMessage("very long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent withoutchange of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLAvery long text to sent without any change of whatever I'm only writing without thinking bla blA BLA")
+#         print(res)
+#         res =client.sendMessage("shutdown -s -t 10")
+#         print(res)
+#         res =client.sendMessage(f"Hello test server!")
+#         print(res)
+#         res =client.sendMessage(str(cnt))
+#         print(res)
 #         try:
 #             print(client.client.recv(2048).decode('utf-8'))
 #         except:
@@ -74,4 +75,4 @@ if __name__ == "__main__":
 #         if cnt > 20: 
 #             break
 
-client.sendMessage(client.DISCONNECT_MESSAGE)
+    client.sendMessage(client.DISCONNECT_MESSAGE)
