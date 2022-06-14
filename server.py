@@ -28,7 +28,7 @@ class EZServer:
                     msg_length = int(msg_length)
                     self.msg = conn.recv(msg_length).decode(self.FORMAT)
                     if self.msg == self.DISCONNECT_MESSAGE:
-                        conn.send("[DISCONNECTED FROM SERVER]".encode(self.FORMAT))
+                        conn.send(f"[RESPONSE FROM SERVER]-> Disconnected!".encode(self.FORMAT))
                         connected = False                        
                     print(f"[INCOMMING MESSAGE FROM] {addr} -> {self.msg}")
 
