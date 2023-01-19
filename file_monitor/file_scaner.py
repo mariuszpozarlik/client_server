@@ -49,12 +49,15 @@ class FileScanner(object):
     def search_for_differences(self):
         diff = []
         fsrc, fdst = self.scan_for_files()
-        for fs in fsrc:
-            #  temporarly replace source path to destination only for content comparision
-            check = fs.replace(self.src, self.dst)
-            if check not in fdst:
-                diff.append(fs)
-                print(fs)
+        try:
+            for fs in fsrc:
+                #  temporarly replace source path to destination only for content comparision
+                check = fs.replace(self.src, self.dst)
+                if check not in fdst:
+                    diff.append(fs)
+                    print(fs.encode(encoding="utf-8"))
+        except Exception as e:
+            print(e.__class__)
         return diff
 
 if __name__ == "__main__":

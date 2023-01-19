@@ -16,18 +16,23 @@ class FileChanges(FileScanner):
 
     def file_list_save(self):
         file_content = ""
-        with open(file=os.path.join(self.src, "file list.txt"), mode='w') as file:  # save src
-            [file.write(x+'\n') for x in self.scan_for_files()[0]]
-
+        try:
+            with open(file=os.path.join(self.src, "file list.txt"), mode='w', encoding="utf-8") as file:  # save src
+                [file.write(x+'\n') for x in self.scan_for_files()[0]]
+        except Exception as e:
+            print(e.__class__)
         # with open(file=os.path.join(self.dst, "file list.txt"), mode='w') as file:  # save dst
         #     [file.write(x+'\n') for x in self.scan_for_files()[1]]
 
     def file_list_open(self):
         files_from_saved_list = []
-        with open(file=os.path.join(self.src, "file list.txt"), mode='r') as file:
-            for line in file:
-                line = line[:-1]  # remove '\n'
-                files_from_saved_list.append(line)
+        try:
+            with open(file=os.path.join(self.src, "file list.txt"), mode='r', encoding="utf-8") as file:
+                for line in file:
+                    line = line[:-1]  # remove '\n'
+                    files_from_saved_list.append(line)
+        except Exception as e:
+            print(e.__class__)
         return files_from_saved_list
 
     def run_file_change_monitor_thread(self):
