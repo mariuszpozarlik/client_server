@@ -1,7 +1,8 @@
 import socket
 import threading
-from Services import PowerService
-import os
+from services import Service
+from file_monitor import file_changes, file_manager, file_scaner
+
 
 class EZServer:
     def __init__(self, server_HEADER: int = 64, server_PORT: int = 5050):
@@ -16,32 +17,43 @@ class EZServer:
         self.server.bind(self.ADDR)
         self.server.setblocking(self.BLOCKING_MODE)
         self.server.settimeout(self.TIMEOUT)
-        self.msg: str = ''    
+        self.msg: str = ''
 
-    def handleClient(self, conn: socket, addr: socket.AddressInfo) -> None:
+    def handle_client(self, conn: socket, addr: socket.AddressInfo) -> None:
         print(f"[NEW CONNECTION] {addr} connected.")
         connected = True
         while connected:
-            try:                
+            try:
                 msg_length = conn.recv(self.HEADER).decode(self.FORMAT)
                 if msg_length:
-                    #print(f"[MESSAGE SIZE] -> {msg_length}")
+
                     msg_length = int(msg_length)
+                    print(f"[MESSAGE SIZE] -> {msg_length}")
                     self.msg = conn.recv(msg_length).decode(self.FORMAT)
-                    if self.msg == PowerService.DISCONNECT_SERVICE:
-                        conn.send(f"[RESPONSE FROM SERVER]-> Disconnected!".encode(self.FORMAT))
-                        connected = False                        
-                    #print(f"[INCOMMING MESSAGE FROM] {addr} -> {self.msg}")
+                    if self.msg == Service.PowerServices["DISCONNECT_SERVICE"]:
+                        connected = False
+                    print(f"[INCOMMING MESSAGE FROM] {addr} -> {self.msg}")
 
-                    PowerService.processService(self.msg, conn)
+                    if Service.processPowerService(str(self.msg)):
+                        conn.send(f"[RESPONSE FROM SERVER]-> message <<{self.msg}>> processed with status 1".encode(
+                            self.FORMAT))
 
-                    conn.send(f"[RESPONSE FROM SERVER]-> message <<{self.msg}>> processed with status {0}".encode(self.FORMAT))
-            except ConnectionResetError as exc:
+                    elif Service.processHelpService(str(self.msg))[0]:
+                        conn.send(Service.processHelpService(str(self.msg))[1].encode(self.FORMAT))
+
+                    elif Service.processBackupServices(str(self.msg)):
+                        conn.send(
+                            f"[RESPONSE FROM SERVER]-> message <<backup server-storage data>>".encode(self.FORMAT))
+
+                    else:
+                        conn.send(f"[RESPONSE FROM SERVER]-> message <<OK>>".encode(self.FORMAT))
+                print(f"[RESPONDED MESSAGE TO] {addr} -> OK")
+            except ConnectionError:
                 connected = False
-                print(exc.__class__)
-            except Exception as e:
+            except ConnectionAbortedError:
                 connected = False
-                print(e.__class__)
+            except:
+                pass
         conn.close()
 
     def start(self) -> None:
@@ -50,12 +62,27 @@ class EZServer:
         while True:
             try:
                 conn, addr = self.server.accept()
-                thread = threading.Thread(target=self.handleClient, args=(conn, addr))
+                thread = threading.Thread(target=self.handle_client, args=(conn, addr))
                 thread.start()
-            except Exception as e: 
-                pass
-            print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")      
+            except Exception as e:
+                print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 3}")
+
 
 if __name__ == "__main__":
+    root_pth = "C:\\"
+    source_folder = r"server-storage"
+    destination_folder = r"server-storage-bckup"
+
+    fc = file_changes.FileChanges(root=root_pth,
+                                  source_folder_name=source_folder,
+                                  destination_folder_name=destination_folder)
+    fc.run_file_change_monitor_thread()
+
+    fm = file_manager.FileManager(root=root_pth,
+                                  source_folder_name=source_folder,
+                                  destination_folder_name=destination_folder)
+    fm.run_diff_copy_from_src_to_dst_thread()
+
     s = EZServer()
     s.start()
+
